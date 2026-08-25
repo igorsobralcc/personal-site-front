@@ -1,110 +1,208 @@
 # Personal Site Frontend
 
-Public, mobile-first React application for the personal site. The MVP presents
-profile, experience, skills, and project data supplied by the Presentation API.
-The blog is intentionally outside the MVP boundary.
+## Project description
 
-## Product goals
+Mobile-first portfolio built with React, TypeScript, Vite, React Router, and TanStack Query. It presents a public professional profile from an independently deployable API, with accessible responsive layouts, resilient loading states, reduced-motion support, and guarded CI delivery.
 
-- Load quickly on mobile and desktop, including on slower networks.
-- Use motion to clarify hierarchy and interaction, without delaying content.
-- Meet WCAG 2.2 AA expectations and respect `prefers-reduced-motion`.
-- Make presentation content deployable independently from the UI.
-- Demonstrate frontend craft without sacrificing usability.
+## Purpose and current scope
+
+This repository contains the public web application for Igor's personal site. It turns the Presentation API's composite public read model into two active routes:
+
+- `/` — concise introduction, availability, professional focus, and a path to the full presentation.
+- `/presentation` — biography, grouped skills, selected projects, experience, contact details, and social profiles.
+
+Unknown routes render the shared not-found experience. Article components and API boundaries are retained in the source for a later publishing phase, but article navigation and routes remain commented out until the Blog API contract is approved.
 
 ## Architecture
 
-The frontend uses a feature-oriented React architecture:
+The application is a client-rendered, feature-oriented React application:
 
 ```text
 src/
-  app/             application bootstrap, providers, routing
-  pages/           route-level composition
-  features/        presentation, experience, projects, skills
+  app/                  bootstrap, providers, route table, application tests
+  features/
+    presentation/       Presentation query and cache policy
+    articles/           deferred article queries; not publicly routed
+  pages/                route-level composition and page states
   shared/
-    api/            generated API contracts and HTTP client
-    components/     reusable accessible UI primitives
-    hooks/          cross-feature React hooks
-    styles/         tokens, global styles, motion primitives
-    utils/          framework-independent helpers
+    api/                 typed HTTP boundaries and development fixtures
+    components/          shell, state panels, and reusable content components
+    prototype/           deferred article fixture content
+    styles/              design tokens, responsive rules, and motion policy
+  test/                  shared Vitest browser-environment setup
+specs/                   permanent feature specifications
+scripts/                 repository policy validators
+.github/                 CI and dependency automation
 ```
 
-Rules:
+### Runtime flow
 
-1. Pages compose features; they do not contain data-access logic.
-2. Features may import from `shared`, never from another feature's internals.
-3. Server state is fetched through the generated Presentation API client.
-4. Animation is progressive enhancement. The content remains complete without
-   JavaScript-driven motion.
-5. Design tokens define color, type, spacing, radii, shadows, and motion. This
-   keeps responsive behavior consistent instead of relying on one-off values.
+```text
+BrowserRouter
+  → SiteShell
+    → route page
+      → feature query hook
+        → typed API boundary
+          → Presentation API
+```
 
-## Development method
+- `main.tsx` owns React, TanStack Query, and router providers.
+- `App.tsx` owns the public route table.
+- Pages compose user-visible states but do not perform HTTP requests.
+- Feature hooks own TanStack Query keys, cancellation, freshness, and retry behavior.
+- Shared API modules are the only network boundary.
+- The Presentation response stays in TanStack Query's cache; it is not copied into a client-side store.
+- The shell reuses the same cached Presentation query for footer contact information.
 
-Every feature and behavior change uses spec-driven development. Implementation
-cannot begin until its specification defines scope, user-visible behavior,
-responsive and accessibility expectations, API dependencies, and verifiable
-acceptance scenarios. Development is committed incrementally using Conventional
-Commits so each coherent change can be reverted safely. See
-[CONTRIBUTING.md](CONTRIBUTING.md).
+### Presentation contract
 
-## Planned stack
-
-- React with TypeScript and Vite
-- React Router for the current presentation route and the future blog routes
-- TanStack Query for remote state, caching, and request lifecycle
-- A client generated from the Presentation API OpenAPI document
-- Motion for React plus CSS transitions for intentional animation
-- CSS Modules backed by design tokens (no runtime CSS-in-JS)
-- Vitest and Testing Library for component tests
-- Playwright for the critical responsive and accessibility journeys
-
-## Communication with the API
-
-The public application makes one initial request:
+The application consumes one composite public operation:
 
 ```http
 GET /api/v1/presentation
 ```
 
-That endpoint returns the complete public read model, avoiding a waterfall of
-profile, experience, project, and skill requests. The frontend treats this
-response as server state and does not duplicate it in a global client store.
+It supplies the profile, skill categories, projects, experiences, and publication order needed for a complete presentation. During local Vite development, `/api/presentation` is proxied to `https://localhost:7211/api/v1/presentation`.
 
-The API owns its OpenAPI contract. The generated client is the integration
-boundary; feature components do not call `fetch` directly. Public requests are
-cacheable. Administrative credentials must never be shipped in this frontend.
+Set `VITE_PRESENTATION_API_URL` when the API is hosted elsewhere. If a development request fails, the current adapter returns representative prototype Presentation data so UI work can continue. Production builds do not use that fallback.
 
-See the Presentation API repository for the complete contract and error format.
+## Business rules
 
-## Responsive and motion baseline
+- Only public presentation content may be requested; administrative routes and credentials never belong in the browser bundle.
+- Home remains concise and does not duplicate the full portfolio narrative.
+- Presentation records render in API-provided order. The client does not infer skill levels or reorder experience and projects.
+- Empty optional collections remove their complete section. Optional fields do not leave punctuation or layout gaps.
+- A null experience end date is displayed as `Present`.
+- External project and social links render only when a published URL exists and use safe new-tab behavior.
+- Contact email and location come from Presentation data and are reused by the shell without a duplicate endpoint.
+- Article routes and calls remain unavailable to visitors until the separate Blog API contract is approved.
+- Unknown and deferred routes expose no private content and resolve to the normal not-found page.
 
-- Start from a 320 px layout and enhance at content-driven breakpoints.
-- Use fluid type and spacing with `clamp()` within bounded design tokens.
-- Keep primary controls at least 44 by 44 CSS pixels.
-- Use semantic HTML, visible focus, keyboard navigation, and sufficient contrast.
-- Animate `transform` and `opacity` when possible; avoid layout-heavy animation.
-- Reserve media dimensions to prevent layout shift.
-- Disable nonessential parallax and reveal effects for reduced-motion users.
-- Target Core Web Vitals: LCP below 2.5 s, INP below 200 ms, CLS below 0.1.
+## Accessibility, responsiveness, and motion
 
-## MVP route
+- The layout starts at 320 px and expands at content-driven breakpoints.
+- The document keeps one header, named primary navigation, main landmark, and footer.
+- Route changes update the document title, return the viewport to main content, and focus the destination heading.
+- Navigation and primary actions meet a 44 by 44 CSS-pixel target baseline.
+- Semantic headings, lists, links, dates, status announcements, and visible focus indicators are used throughout.
+- Colors follow the operating system's light or dark preference.
+- Motion is limited to short context-preserving transitions. `prefers-reduced-motion` removes nonessential animation and smooth scrolling.
+- Long labels, identifiers, media, and code cannot create page-level horizontal overflow.
 
-`/` is a composed portfolio page with:
+## Production safety
 
-1. Hero and profile summary
-2. Skills and capabilities
-3. Experience timeline
-4. Featured projects
-5. Contact and social links
+The repository uses the following safeguards:
 
-The future `/blog` and `/blog/:slug` routes will consume the separate Blog API.
+- TypeScript project builds reject type errors before Vite emits production assets.
+- Vitest and Testing Library cover shared routing, navigation disclosure, active-route state, deferred routes, and shell persistence.
+- GitHub Actions installs the exact lockfile with `npm ci`, runs tests, and creates a production build on pull requests and `main`.
+- Commit subjects are validated against the repository's Conventional Commit policy.
+- The commit validator tests its own accepted and rejected examples before inspecting introduced commits.
+- `actionlint` is downloaded at a fixed version, verified by SHA-256, and used to validate workflows.
+- Third-party GitHub Actions are pinned to complete commit SHAs.
+- Gitleaks scans committed history for accidentally published secrets.
+- Workflow permissions default to read-only, persisted checkout credentials are disabled, jobs have timeouts, and redundant CI runs are cancelled.
+- Dependabot submits weekly grouped updates for npm packages and GitHub Actions.
+- API URLs are build-time configuration; production secrets and administrative credentials must never use the `VITE_` prefix.
+- Development fixtures are guarded by `import.meta.env.DEV` and cannot activate in a production build.
 
-## Delivery order
+## Run locally
 
-1. Scaffold the React application and quality gates.
-2. Generate the API client from the agreed contract.
-3. Implement the design system and responsive shell.
-4. Build each portfolio feature using realistic seed data from the API.
-5. Add motion, responsive, accessibility, and performance verification.
-6. Deploy only after the Presentation API environment is available.
+### Prerequisites
+
+- Node.js 24.x, matching CI.
+- npm, supplied with Node.js.
+- Optional: .NET 10 SDK, PostgreSQL, and the sibling Presentation API repository for live data.
+
+### Frontend with development fixture data
+
+1. Open a terminal in this repository:
+
+   ```powershell
+   cd C:\Users\igors\repos\personal-site\personal-site-front
+   ```
+
+2. Install the exact dependency graph:
+
+   ```powershell
+   npm ci
+   ```
+
+3. Start Vite:
+
+   ```powershell
+   npm run dev
+   ```
+
+4. Open the local URL printed by Vite, normally `http://localhost:5173`.
+
+Vite attempts to reach the local Presentation API. When it is unavailable, development-only fixture data keeps the public pages usable.
+
+### Frontend with the live Presentation API
+
+1. Configure and start PostgreSQL as described in the sibling `personal-site-presentation-api` repository.
+
+2. From the shared repositories directory, start the API:
+
+   ```powershell
+   dotnet run --project .\personal-site-presentation-api\src\PersonalSite.Presentation.Api
+   ```
+
+3. In a second terminal, start this frontend with `npm run dev`.
+
+4. If the API does not use the default `https://localhost:7211` address, create an uncommitted `.env.local` file:
+
+   ```dotenv
+   VITE_PRESENTATION_API_URL=https://localhost:YOUR_PORT/api/v1/presentation
+   ```
+
+5. Restart Vite after changing environment variables.
+
+Only public configuration belongs in `.env.local`. Any variable prefixed with `VITE_` is eligible to be embedded into client assets.
+
+### Quality checks
+
+Run the same application gates used by CI:
+
+```powershell
+npm test
+npm run build
+```
+
+Run tests continuously while developing:
+
+```powershell
+npm run test:watch
+```
+
+Validate the commit-message policy with Git Bash:
+
+```powershell
+& 'C:\Program Files\Git\bin\bash.exe' scripts/validate-commits.sh --self-test
+```
+
+The `npm run lint` script is reserved for the forthcoming ESLint configuration and is not yet a CI gate.
+
+## Development workflow
+
+Behavior changes follow the permanent specifications under `specs/` and the process in [CONTRIBUTING.md](CONTRIBUTING.md): specify, approve, prove with tests, implement, verify, reconcile documentation, and commit in small Conventional Commit checkpoints.
+
+## Key trade-offs
+
+- **Client rendering instead of SSR:** simpler independent deployment and iteration, but weaker first-load SEO and no server-rendered fallback.
+- **One composite Presentation request instead of resource waterfalls:** consistent and fast page hydration, but larger responses and coarser cache invalidation.
+- **TanStack Query instead of a global client store:** less duplicated server state, but it is not intended for complex local workflow state.
+- **Global tokenized CSS instead of CSS Modules:** a small runtime and easy shared theming, but selectors require stronger naming discipline.
+- **Development fixtures instead of requiring the API:** faster isolated frontend work, but fixtures can drift until contract-generation checks are added.
+- **Deferred blog code instead of deleting it:** preserves completed work and integration boundaries, but carries inactive maintenance surface.
+- **System theme instead of a manual selector:** respects user preference with no persistence UI, but visitors cannot override it per site.
+
+## Technology
+
+- React 19 and React DOM
+- TypeScript 5.9
+- Vite 7
+- React Router 7
+- TanStack Query 5
+- Vitest, jsdom, and Testing Library
+- GitHub Actions, Dependabot, Gitleaks, and actionlint
