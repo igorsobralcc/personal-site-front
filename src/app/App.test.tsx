@@ -3,13 +3,20 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
+import { ThemeProvider } from '../shared/components/ThemeContext'
 
 function renderApp(route = '/') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[route]}><App /></MemoryRouter></QueryClientProvider>)
+  return render(<QueryClientProvider client={client}><ThemeProvider><MemoryRouter initialEntries={[route]}><App /></MemoryRouter></ThemeProvider></QueryClientProvider>)
 }
 
-afterEach(() => { cleanup(); vi.restoreAllMocks() })
+afterEach(() => {
+  cleanup()
+  vi.restoreAllMocks()
+  window.localStorage.clear()
+  document.documentElement.removeAttribute('data-theme')
+  document.documentElement.classList.remove('theme-switching')
+})
 
 describe('site shell', () => {
   it('renders the public destinations and hides the deferred blog', () => {
@@ -43,5 +50,14 @@ describe('site shell', () => {
     renderApp('/articles')
     expect(screen.getByRole('heading', { level: 1, name: 'Page not found.' })).toBeInTheDocument()
     expect(screen.queryByText(/read articles/i)).not.toBeInTheDocument()
+  })
+
+  it('lets visitors switch and persist the color theme', () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'))
+    renderApp('/')
+    fireEvent.click(screen.getByRole('button', { name: 'Switch to dark mode' }))
+    expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
+    expect(window.localStorage.getItem('theme')).toBe('dark')
+    expect(screen.getByRole('button', { name: 'Switch to light mode' })).toBeInTheDocument()
   })
 })

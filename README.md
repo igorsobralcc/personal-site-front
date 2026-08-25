@@ -85,7 +85,7 @@ Set `VITE_PRESENTATION_API_URL` when the API is hosted elsewhere. If a developme
 - Route changes update the document title, return the viewport to main content, and focus the destination heading.
 - Navigation and primary actions meet a 44 by 44 CSS-pixel target baseline.
 - Semantic headings, lists, links, dates, status announcements, and visible focus indicators are used throughout.
-- Colors follow the operating system's light or dark preference.
+- Colors initially follow the operating system preference and can be overridden with the persistent light/dark switch.
 - Motion is limited to short context-preserving transitions. `prefers-reduced-motion` removes nonessential animation and smooth scrolling.
 - Long labels, identifiers, media, and code cannot create page-level horizontal overflow.
 
@@ -195,7 +195,7 @@ Behavior changes follow the permanent specifications under `specs/` and the proc
 - **Global tokenized CSS instead of CSS Modules:** a small runtime and easy shared theming, but selectors require stronger naming discipline.
 - **Development fixtures instead of requiring the API:** faster isolated frontend work, but fixtures can drift until contract-generation checks are added.
 - **Deferred blog code instead of deleting it:** preserves completed work and integration boundaries, but carries inactive maintenance surface.
-- **System theme instead of a manual selector:** respects user preference with no persistence UI, but visitors cannot override it per site.
+- **System-aware theme with a manual override:** respects the initial device preference and visitor choice, but adds persisted client state and a small risk of pre-hydration color mismatch.
 
 ## Technology
 
