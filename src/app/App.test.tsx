@@ -12,17 +12,17 @@ function renderApp(route = '/') {
 afterEach(() => { cleanup(); vi.restoreAllMocks() })
 
 describe('site shell', () => {
-  it('renders the three primary destinations and identifies the current page', () => {
+  it('renders the public destinations and hides the deferred blog', () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'))
-    renderApp('/articles')
+    renderApp('/presentation')
     expect(screen.getByRole('navigation', { name: 'Primary navigation' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Articles' })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('heading', { level: 1, name: 'Ideas made useful.' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Presentation' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.queryByRole('link', { name: 'Articles' })).not.toBeInTheDocument()
   })
 
   it('opens and closes the labeled navigation disclosure', () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'))
-    renderApp('/articles')
+    renderApp('/presentation')
     const menu = screen.getByRole('button', { name: 'Open menu' })
     fireEvent.click(menu)
     expect(menu).toHaveAttribute('aria-expanded', 'true')
@@ -36,5 +36,12 @@ describe('site shell', () => {
     renderApp('/missing')
     expect(screen.getByRole('heading', { level: 1, name: 'Page not found.' })).toBeInTheDocument()
     expect(screen.getByRole('contentinfo')).toBeInTheDocument()
+  })
+
+  it('treats deferred article routes as unavailable', () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'))
+    renderApp('/articles')
+    expect(screen.getByRole('heading', { level: 1, name: 'Page not found.' })).toBeInTheDocument()
+    expect(screen.queryByText(/read articles/i)).not.toBeInTheDocument()
   })
 })
