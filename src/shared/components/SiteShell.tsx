@@ -50,7 +50,7 @@ export function SiteShell() {
   return <div className="site-canvas" onKeyDown={onKeyDown}>
     <a className="skip-link" href="#main">Skip to content</a>
     <header className="site-header"><div className="header-inner">
-      <Link className="brand" to="/" aria-label="Igor, Home"><span>I</span><strong>Igor&nbsp;/&nbsp;Engineer</strong></Link>
+      <Link className="brand" to="/" aria-label="Igor Sobral, Home"><span>I</span><strong>Igor Sobral&nbsp;|&nbsp;Software Engineer</strong></Link>
       <nav className="desktop-nav" aria-label="Primary navigation">{links.map(link => <NavLink className="nav-link" key={link.to} to={link.to} end={link.end}>{link.label}</NavLink>)}</nav>
       <div className="header-actions"><button ref={menuButton} className="menu-button" type="button" aria-expanded={open} aria-controls="mobile-nav" aria-label={open ? 'Close menu' : 'Open menu'} onClick={() => setOpen(value => !value)}>
         <svg aria-hidden="true" viewBox="0 0 24 24">{open ? <path d="M18 6 6 18M6 6l12 12" /> : <path d="M3 6h18M3 12h18M3 18h18" />}</svg><span>Menu</span>
