@@ -47,6 +47,25 @@ A feature is incomplete unless its pull request links its specification,
 acceptance scenarios map to automated tests, relevant checks pass, and the
 documentation describes the behavior that was actually delivered.
 
+### Local quality gate
+
+Before opening or updating a pull request, run:
+
+```powershell
+npm run quality
+npm run build
+```
+
+Husky invokes lint-staged before each commit. Staged JavaScript and TypeScript
+receive safe ESLint and Prettier fixes followed by related Vitest tests;
+supported staged text files receive Prettier fixes. Inspect the resulting staged
+diff and re-stage intentional partial changes before retrying a failed commit.
+The hook never replaces the full repository checks in CI.
+
+Use `npm run lint:fix` and `npm run format` for deliberate repository-wide
+cleanup. Do not install global copies of the quality tools and do not bypass a
+failed hook except for a documented emergency; `--no-verify` cannot bypass CI.
+
 ## Required method: Conventional Commits
 
 Development must be recorded as a sequence of small, atomic commits using the

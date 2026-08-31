@@ -94,8 +94,19 @@ Set `VITE_PRESENTATION_API_URL` when the API is hosted elsewhere. If a developme
 The repository uses the following safeguards:
 
 - TypeScript project builds reject type errors before Vite emits production assets.
+- ESLint Flat Config performs type-aware TypeScript, React Hooks, JSX
+  accessibility, import-order, promise-safety, and production logging checks.
+- Prettier is the sole source-formatting authority and is verified independently
+  from ESLint.
+- Zod validates unknown API responses and development fixtures before they enter
+  TanStack Query's cache; frontend transport types are inferred from those
+  schemas.
+- Husky and lint-staged format, lint, and run related Vitest tests for staged
+  frontend files before a local commit.
 - Vitest and Testing Library cover shared routing, navigation disclosure, active-route state, deferred routes, and shell persistence.
-- GitHub Actions installs the exact lockfile with `npm ci`, runs tests, and creates a production build on pull requests and `main`.
+- GitHub Actions installs the exact lockfile with `npm ci`, then checks lint,
+  formatting, types, tests, and the production build on pull requests and
+  `main`.
 - Commit subjects are validated against the repository's Conventional Commit policy.
 - The commit validator tests its own accepted and rejected examples before inspecting introduced commits.
 - `actionlint` is downloaded at a fixed version, verified by SHA-256, and used to validate workflows.
@@ -165,9 +176,30 @@ Only public configuration belongs in `.env.local`. Any variable prefixed with `V
 Run the same application gates used by CI:
 
 ```powershell
-npm test
+npm run quality
 npm run build
 ```
+
+Run an individual check while diagnosing a failure:
+
+```powershell
+npm run lint
+npm run format:check
+npm run typecheck
+npm test
+```
+
+Apply safe lint and formatting fixes explicitly:
+
+```powershell
+npm run lint:fix
+npm run format
+```
+
+The pre-commit hook applies ESLint and Prettier fixes only to staged files and
+runs Vitest tests related to staged JavaScript or TypeScript. Review the changed
+staged content before retrying a failed commit. Local hooks optimize feedback;
+the full, read-only CI checks remain authoritative.
 
 Run tests continuously while developing:
 
@@ -180,8 +212,6 @@ Validate the commit-message policy with Git Bash:
 ```powershell
 & 'C:\Program Files\Git\bin\bash.exe' scripts/validate-commits.sh --self-test
 ```
-
-The `npm run lint` script is reserved for the forthcoming ESLint configuration and is not yet a CI gate.
 
 ## Development workflow
 

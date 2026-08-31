@@ -60,10 +60,10 @@ jobs:
         uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_COMMENTS: 'false'
 
   test:
-    name: Build and test
+    name: Frontend quality
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -78,6 +78,12 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Check formatting
+        run: npm run format:check
+      - name: Type-check
+        run: npm run typecheck
       - name: Test
         run: npm test
       - name: Build
