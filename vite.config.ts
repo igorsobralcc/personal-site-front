@@ -6,6 +6,17 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
+    include: ['src/**/*.test.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      all: true,
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.*', 'src/**/*.spec.*', 'src/test/**', 'src/vite-env.d.ts'],
+      reporter: ['text', 'json-summary', 'html', 'lcov'],
+      reportsDirectory: 'coverage',
+      clean: true,
+      thresholds: { statements: 90, branches: 90, functions: 90, lines: 90 },
+    },
   },
   server: {
     proxy: {
