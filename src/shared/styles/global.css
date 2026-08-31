@@ -8,7 +8,7 @@
   --border: #d8d8cf;
   --green: #176b52;
   --green-fg: #f8fffc;
-  --orange: #db6b42;
+  --orange: #a94727;
   --soft: #e4ece7;
   --scroll-progress: 0;
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -42,7 +42,7 @@
   --border: #d8d8cf;
   --green: #176b52;
   --green-fg: #f8fffc;
-  --orange: #db6b42;
+  --orange: #a94727;
   --soft: #e4ece7;
   color-scheme: light;
 }
@@ -837,7 +837,7 @@ main {
 .footer-meta {
   text-align: right;
   font-size: 0.875rem;
-  opacity: 0.75;
+  opacity: 0.85;
 }
 .footer-meta a {
   text-underline-offset: 4px;
