@@ -1,13 +1,16 @@
 import { Route, Routes } from 'react-router-dom'
-import { SiteShell } from '../shared/components/SiteShell'
+
 import { HomePage } from '../pages/HomePage'
+import { NotFoundPage } from '../pages/NotFoundPage'
 import { PresentationPage } from '../pages/PresentationPage'
 // Blog routes are intentionally retained for the future publishing phase.
 // import { ArticlesPage } from '../pages/ArticlesPage'
 // import { ArticlePage } from '../pages/ArticlePage'
-import { NotFoundPage } from '../pages/NotFoundPage'
+import { SiteShell } from '../shared/components/SiteShell'
 
-export function App() {
+import type { ReactElement } from 'react'
+
+export function App(): ReactElement {
   return (
     <Routes>
       <Route element={<SiteShell />}>

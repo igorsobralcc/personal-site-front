@@ -2,12 +2,23 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
 import { App } from './App'
 import { ThemeProvider } from '../shared/components/ThemeContext'
 
-function renderApp(route = '/') {
+import type { RenderResult } from '@testing-library/react'
+
+function renderApp(route = '/'): RenderResult {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return render(<QueryClientProvider client={client}><ThemeProvider><MemoryRouter initialEntries={[route]}><App /></MemoryRouter></ThemeProvider></QueryClientProvider>)
+  return render(
+    <QueryClientProvider client={client}>
+      <ThemeProvider>
+        <MemoryRouter initialEntries={[route]}>
+          <App />
+        </MemoryRouter>
+      </ThemeProvider>
+    </QueryClientProvider>,
+  )
 }
 
 afterEach(() => {
@@ -23,7 +34,10 @@ describe('site shell', () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'))
     renderApp('/presentation')
     expect(screen.getByRole('navigation', { name: 'Primary navigation' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Presentation' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Presentation' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
     expect(screen.queryByRole('link', { name: 'Articles' })).not.toBeInTheDocument()
   })
 
